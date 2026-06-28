@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高校受験 読書ガイド</title>
+<style>
+  body{margin:0; padding:20px; background:#fff; color:#1a1a1a;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",Meiryo,system-ui,sans-serif; font-size:14px}
+  h1{font-size:18px; margin:0 0 4px}
+  .sub{color:#666; font-size:12px; margin:0 0 16px}
+  .sub a{color:#1453e5}
+  .group{margin:0 0 12px}
+  .group > .lbl{font-size:11px; color:#888; margin:0 0 6px; letter-spacing:.04em}
+  .tags{display:flex; gap:7px; flex-wrap:wrap; align-items:center}
+  .tag{cursor:pointer; user-select:none; border:1px solid #d2d2d2; background:#fff; color:#333;
+    padding:5px 13px; border-radius:999px; font-size:13px; transition:.1s; white-space:nowrap}
+  .tag:hover{border-color:#aaa}
+  .tag.on{background:#1453e5; border-color:#1453e5; color:#fff}
+  .tag.sc.on{background:#127a3e; border-color:#127a3e}
+  .tag.gn.on{background:#a8541b; border-color:#a8541b}
+  .reset{cursor:pointer; border:none; background:none; color:#1453e5; font:inherit; font-size:12px; padding:5px 4px; text-decoration:underline}
+  .count{color:#666; font-size:12px; margin:14px 0 10px}
+  .scroll{overflow:auto; max-height:calc(100vh - 250px); border:1px solid #ddd; border-radius:4px}
+  table{border-collapse:collapse; width:100%}
+  th,td{padding:7px 10px; border-bottom:1px solid #eee; text-align:left; vertical-align:top}
+  th{position:sticky; top:0; background:#f4f4f4; cursor:pointer; user-select:none; font-weight:600; border-bottom:1px solid #ccc; white-space:nowrap}
+  th:hover{background:#e9e9e9}
+  th.sorted{color:#1453e5}
+  th .ar{font-size:10px; color:#1453e5; margin-left:3px}
+  td.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+  td.nowrap{white-space:nowrap}
+  .gtag{display:inline-block; padding:1px 8px; border-radius:999px; font-size:12px}
+  .gtag.h{background:#fdeede; color:#a8541b}
+  .gtag.n{background:#e7f0ff; color:#1453e5}
+  tbody tr:nth-child(even){background:#fafafa}
+  tbody tr:hover{background:#eef4ff}
+  .empty{padding:40px; text-align:center; color:#888}
+</style>
+</head>
+<body>
+  <h1>高校受験 読書ガイド</h1>
+  <p class="sub">高校入試 国語で出題された本（出典）の一覧です ／ 千葉公立・専修大学松戸　※2026年7月時点 ／ <a href="index.html">EVデータベースへ →</a></p>
+
+  <div class="group">
+    <div class="lbl">学校</div>
+    <div class="tags" id="schoolTags"></div>
+  </div>
+  <div class="group">
+    <div class="lbl">年度</div>
+    <div class="tags" id="yearTags"></div>
+  </div>
+  <div class="group">
+    <div class="lbl">ジャンル</div>
+    <div class="tags" id="genreTags"></div>
+  </div>
+
+  <p class="count" id="count"></p>
+  <div class="scroll">
+    <table id="tbl"><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table>
+    <div class="empty" id="empty" style="display:none">該当なし</div>
+  </div>
+
+<script>
+const DATA = [
+  {"学校":"千葉公立","年度":"2026","日程":"","ジャンル":"評論・論説","著者":"こうしまゆうすけ","書名":"つくるをひらく"},
+  {"学校":"千葉公立","年度":"2026","日程":"","ジャンル":"小説","著者":"今村翔吾","書名":"ひゃっか！"},
+  {"学校":"千葉公立","年度":"2025","日程":"","ジャンル":"評論・論説","著者":"さいとうあや","書名":"ルビンのツボー芸術する体と心"},
+  {"学校":"千葉公立","年度":"2025","日程":"","ジャンル":"小説","著者":"三浦しおん","書名":"墨のゆらめき"},
+  {"学校":"千葉公立","年度":"2024","日程":"","ジャンル":"評論・論説","著者":"好井裕明","書名":"「今、ここ」から考える社会学"},
+  {"学校":"千葉公立","年度":"2024","日程":"","ジャンル":"小説","著者":"山本一力","書名":"銀しゃり"},
+  {"学校":"専修大学松戸","年度":"2025","日程":"前期17日","ジャンル":"評論・論説","著者":"河野哲也","書名":"人は語り続けるとき、考えていない"},
+  {"学校":"専修大学松戸","年度":"2025","日程":"前期17日","ジャンル":"小説","著者":"青山七恵","書名":"ひとり日和"},
+  {"学校":"専修大学松戸","年度":"2025","日程":"前期18日","ジャンル":"評論・論説","著者":"石黒浩","書名":"アバターと共生する未来社会"},
+  {"学校":"専修大学松戸","年度":"2025","日程":"前期18日","ジャンル":"小説","著者":"朝比奈あすか","書名":"人間タワー"},
+  {"学校":"専修大学松戸","年度":"2024","日程":"前期17日","ジャンル":"評論・論説","著者":"山田剛史","書名":"心のなかはどうなっているの？高校生の「なぜ」に答える心理学"},
+  {"学校":"専修大学松戸","年度":"2024","日程":"前期17日","ジャンル":"小説","著者":"早瀬耕","書名":"十二月の辞書"},
+  {"学校":"専修大学松戸","年度":"2024","日程":"前期18日","ジャンル":"評論・論説","著者":"今井むつみ・秋田喜美","書名":"言語の本質"},
+  {"学校":"専修大学松戸","年度":"2024","日程":"前期18日","ジャンル":"小説","著者":"成海隼人","書名":"尼崎ストロベリー"},
+  {"学校":"専修大学松戸","年度":"2023","日程":"前期17日","ジャンル":"評論・論説","著者":"齋藤孝","書名":"潜在能力を引き出す「一瞬」をつかむ力"},
+  {"学校":"専修大学松戸","年度":"2023","日程":"前期17日","ジャンル":"小説","著者":"砥上裕將","書名":"線は、僕を描く"},
+  {"学校":"専修大学松戸","年度":"2023","日程":"前期18日","ジャンル":"評論・論説","著者":"岸見一郎","書名":"本をどう読むか　幸せになる読書術"},
+  {"学校":"専修大学松戸","年度":"2023","日程":"前期18日","ジャンル":"小説","著者":"蓮見恭子","書名":"襷を、君に。"},
+  {"学校":"専修大学松戸","年度":"2022","日程":"前期17日","ジャンル":"評論・論説","著者":"原田信男","書名":"神と肉　日本の動物供犠"},
+  {"学校":"専修大学松戸","年度":"2022","日程":"前期17日","ジャンル":"小説","著者":"いとうみく","書名":"朔と新"},
+  {"学校":"専修大学松戸","年度":"2021","日程":"前期17日","ジャンル":"評論・論説","著者":"日向野幹也","書名":"高校生からのリーダーシップ入門"},
+  {"学校":"専修大学松戸","年度":"2021","日程":"前期17日","ジャンル":"小説","著者":"有川浩","書名":"阪急電車"}
+];
+const COLS = ["学校","年度","日程","ジャンル","著者","書名"];
+const NUM = new Set(["年度"]);
+let sortKey=null, sortDir=1;
+
+const sel = { 学校:new Set(), 年度:new Set(), ジャンル:new Set() };
+
+// ---- build tag groups ----
+function buildTags(key, wrapId, cls){
+  const wrap=document.getElementById(wrapId);
+  let vals=[...new Set(DATA.map(d=>d[key]))];
+  if(NUM.has(key)) vals.sort((a,b)=>b-a); else vals.sort((a,b)=>a.localeCompare(b,'ja'));
+  vals.forEach(v=>{
+    const t=document.createElement('div'); t.className='tag'+(cls?' '+cls:''); t.textContent=v;
+    t.onclick=()=>{ sel[key].has(v)?sel[key].delete(v):sel[key].add(v); t.classList.toggle('on'); render(); };
+    wrap.appendChild(t);
+  });
+}
+buildTags('学校','schoolTags','sc');
+buildTags('年度','yearTags');
+buildTags('ジャンル','genreTags','gn');
+
+const rst=document.createElement('button'); rst.className='reset'; rst.textContent='すべて解除';
+rst.onclick=()=>{
+  sel.学校.clear(); sel.年度.clear(); sel.ジャンル.clear();
+  document.querySelectorAll('.tag.on').forEach(x=>x.classList.remove('on'));
+  sortKey=null; sortDir=1; render();
+};
+document.getElementById('genreTags').appendChild(rst);
+
+// ---- header ----
+const head=document.getElementById('head');
+COLS.forEach(c=>{
+  const th=document.createElement('th');
+  th.textContent=c;
+  const ar=document.createElement('span'); ar.className='ar'; th.appendChild(ar);
+  th.onclick=()=>{ if(sortKey===c) sortDir*=-1; else {sortKey=c; sortDir=1;} render(); };
+  th.dataset.key=c; head.appendChild(th);
+});
+
+function filtered(){
+  return DATA.filter(d=>{
+    if(sel.学校.size && !sel.学校.has(d['学校'])) return false;
+    if(sel.年度.size && !sel.年度.has(d['年度'])) return false;
+    if(sel.ジャンル.size && !sel.ジャンル.has(d['ジャンル'])) return false;
+    return true;
+  });
+}
+
+function render(){
+  let rows=filtered();
+  if(sortKey){
+    const isNum=NUM.has(sortKey);
+    rows.sort((a,b)=>{
+      let va=a[sortKey], vb=b[sortKey];
+      if(isNum) return (parseFloat(va)-parseFloat(vb))*sortDir;
+      return String(va).localeCompare(String(vb),'ja')*sortDir;
+    });
+  }
+  const body=document.getElementById('body'); body.innerHTML='';
+  document.getElementById('empty').style.display=rows.length?'none':'block';
+  document.getElementById('tbl').style.display=rows.length?'':'none';
+  const frag=document.createDocumentFragment();
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    COLS.forEach(c=>{
+      const td=document.createElement('td');
+      if(c==='ジャンル'){
+        const sp=document.createElement('span');
+        sp.className='gtag '+(r[c]==='小説'?'h':'n'); sp.textContent=r[c];
+        td.appendChild(sp);
+      } else {
+        td.textContent=r[c];
+      }
+      if(NUM.has(c)) td.className='num';
+      if(c==='学校'||c==='日程') td.className='nowrap';
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+  });
+  body.appendChild(frag);
+  document.querySelectorAll('#head th').forEach(th=>{
+    const ar=th.querySelector('.ar');
+    if(th.dataset.key===sortKey){ th.classList.add('sorted'); ar.textContent=sortDir>0?'▲':'▼'; }
+    else { th.classList.remove('sorted'); ar.textContent=''; }
+  });
+  document.getElementById('count').textContent=rows.length+' 件';
+}
+render();
+</script>
+</body>
+</html>
